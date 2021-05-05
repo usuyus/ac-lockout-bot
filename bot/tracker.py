@@ -1,6 +1,6 @@
 from utils import get_submissions, get_reactions
 import asyncio
-from time import time
+from datetime import datetime
 
 class LockoutTracker:
 	
@@ -24,7 +24,7 @@ class LockoutTracker:
 	
 	async def run(self, duration):
 		self.running = True
-		self.start_time = int(time())
+		self.start_time = int(datetime.now().timestamp())
 		self.duration = duration
 
 		# await asyncio.sleep(5)
@@ -104,7 +104,7 @@ class LockoutTracker:
 		
 		res += "                       \n"
 	
-		cur_time = int(time())
+		cur_time = int(datetime.now().timestamp())
 		diff = max(0, self.duration - (cur_time - self.start_time))
 		res += f"Time left: {diff//60:02}:{diff%60:02}"
 

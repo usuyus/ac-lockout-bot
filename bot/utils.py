@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from time import strptime, mktime
+from datetime import datetime
 
 def get_submissions(contest, user):
 	url = f"https://atcoder.jp/contests/{contest}/submissions?f.User={user}"
@@ -19,9 +19,9 @@ def get_submissions(contest, user):
 	for row in rows:
 		if row.string == '\n': continue # it inserts these for no reason...
 
-		submit_time = row.contents[1].time.text
-		submit_time = strptime(submit_time, "%Y-%m-%d %H:%M:%S%z")
-		submit_time = int(mktime(submit_time) - 6 * 3600) # TR <-[6hrs]-> JP
+		time_text = row.contents[1].time.text
+		dt = datetime.strptime(time_text, "%Y-%m-%d %H:%M:%S%z")
+		submit_time = int(dt.timestamp())
 
 		problem = row.contents[3].a.text.split(" ")[0]
 		verdict = row.contents[13].span.text
