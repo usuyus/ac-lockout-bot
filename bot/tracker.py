@@ -24,6 +24,7 @@ class LockoutTracker:
 	
 	async def run(self, duration):
 		self.running = True
+		self.stopped = False
 		self.start_time = int(datetime.now().timestamp())
 		self.duration = duration
 

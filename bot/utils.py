@@ -2,6 +2,11 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 
+def contest_exists(contest):
+	url = f"https://atcoder.jp/contests/{contest}"
+	r = requests.get(url)
+	return r.status_code == 200
+
 def get_submissions(contest, user):
 	url = f"https://atcoder.jp/contests/{contest}/submissions?f.User={user}"
 	r = requests.get(url)
