@@ -31,7 +31,7 @@ class LockoutTracker:
 		# await asyncio.sleep(5)
 
 		if not self.check_no_submits():
-			await self.msg.channel.send("warning: there's a user who has already submitted something to this contest", delete_after = 10)
+			await self.msg.channel.send("warning: there's a user who has already submitted something to this contest")
 		
 		print("starting round...")
 		await self.msg.edit(content = "round started, good luck!")
@@ -70,7 +70,7 @@ class LockoutTracker:
 
 				upd_users = await get_reactions(self.msg)
 				upd_msg = f"{handle} solved problem {chr(letter + ord('A'))} for {cur_pts}! "
-				for user in upd_users: upd_msg += user.mention
+				for user in upd_users: upd_msg += user.mention + " "
 				await self.msg.channel.send(upd_msg)
 		# print("exit update")
 	

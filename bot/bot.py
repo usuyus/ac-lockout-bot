@@ -9,8 +9,7 @@ class LockoutBot(discord.Client):
 	lockouts = {}
 	
 	async def on_ready(self):
-		print(f"username: {str(self.user)}")
-		print(self.user.name)
+		print(f"bot is up! username = {str(self.user)}")
 
 	async def on_message(self, msg):
 		# to avoid infinite loops
@@ -27,25 +26,25 @@ class LockoutBot(discord.Client):
 		if cmd == "help": await self.cmd_help(channel)
 		elif cmd == "start": await self.cmd_start(channel, tokens[2:])
 		elif cmd == "stop": await self.cmd_stop(channel)
+		elif cmd == "pull": await self.cmd_pull(channel)
 		else: await channel.send(f"unknown command {cmd}, see `{self.prefix} help` for more info")
 	
 	async def cmd_help(self, channel):
-		res = ""
-		res += f"usage: {self.prefix} [command] [arguments]\n"
-		res += f"\t{self.prefix} help -- display this help text\n"
-		res += f"\t{self.prefix} start [contest_id] [atcoder_handles] -- start a lockout round\n"
-		res += f"\t{self.prefix} stop -- stop the lockout round running in a channel\n"
-		res += f"\t{self.prefix} pull -- resend the leaderboard message"
-		
-		await channel.send("```" + res + "```")
+		desc = ""
+		desc += "a discord bot that hosts rounds from atcoder questions\n"
+		desc += f"usage: {self.prefix} [command] [arguments]\n"
+
+		embed = discord.Embed(
+			title = "ACLockoutBot",
+			description = desc
+		)
+		embed.add_field(name = f"{self.prefix} help", value = "display this message")
+		embed.add_field(name = f"{self.prefix} start", value = "start a lockout round (arguments: [contest_id] [handles])")
+		embed.add_field(name = f"{self.prefix} stop", value = "stop the lockout round running in a channel")
+		embed.add_field(name = f"{self.prefix} pull", value = "resend the leaderboard message")
+		await channel.send(embed = embed)
 
 	async def cmd_start(self, channel, args):
-		try: self.lockouts[channel.id]
-		except KeyError: pass
-		else:
-			await channel.send("that channel already has an ongoing lockout!")
-			return
-		
 		contest = args[0]
 		users = args[1:]
 
@@ -55,9 +54,15 @@ class LockoutBot(discord.Client):
 
 		lockout_msg = await channel.send("lockout round starting in a couple of seconds...")
 
+		try: self.lockouts[channel.id]
+		except KeyError: pass
+		else:
+			await channel.send("that channel already has an ongoing lockout!")
+			return
+		
 		tracker = LockoutTracker(contest, users, lockout_msg)
 		self.lockouts[channel.id] = tracker
-		await tracker.run(10)
+		await tracker.run(30 * 60)
 
 		if tracker.stopped:
 			return
@@ -72,8 +77,18 @@ class LockoutBot(discord.Client):
 			await channel.send("round stopped manually.")
 			del self.lockouts[channel.id]
 		except KeyError:
-			await channel.send("there is no lockout round currently running!")
+			await channel.send("there is no round currently running!")
 			return
+	
+	async def cmd_pull(self, channel):
+		try:
+			tracker = self.lockouts[channel.id]
+			tracker.msg = await channel.send("the leaderboard should appear here sometime soon.")
+		except KeyError:
+			await channel.send("there is no round currently running!")
+			return
+
+
 
 def run_bot():
 	token = open("private/token.txt", "r").read()
